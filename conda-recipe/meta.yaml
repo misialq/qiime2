@@ -28,6 +28,7 @@ requirements:
   - tomlkit
   - lxml
   build:
+  - python {{ python }}
   - setuptools
   - versioningit
 test:

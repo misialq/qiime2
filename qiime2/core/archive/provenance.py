@@ -198,7 +198,7 @@ def metadata_path_constructor(loader, node) -> MetadataInfo:
 
     action_fp = Path(loader.name)
     metadata_fp = action_fp.parent / rel_fp
-    md5sum_hash = util.md5sum(metadata_fp)
+    md5sum_hash = util.checksum(metadata_fp, checksum_type='md5')
 
     return MetadataInfo(artifact_uuids, rel_fp, md5sum_hash)
 
@@ -273,6 +273,7 @@ for key in CONSTRUCTOR_REGISTRY:
 class ProvenanceCapture:
     ANCESTOR_DIR = 'artifacts'
     ACTION_DIR = 'action'
+    TEMP_ANNOTATIONS_DIR = 'annotations'
     ACTION_FILE = 'action.yaml'
     CITATION_FILE = 'citations.bib'
 
@@ -309,6 +310,9 @@ class ProvenanceCapture:
         self.action_dir = self.path / self.ACTION_DIR
         self.action_dir.mkdir()
 
+        self.temp_annotations_dir = self.path / self.TEMP_ANNOTATIONS_DIR
+        self.temp_annotations_dir.mkdir()
+
     def add_ancestor(self, artifact):
         other_path = artifact._archiver.provenance_dir
         if other_path is None:
@@ -337,6 +341,14 @@ class ProvenanceCapture:
                     destination = self.ancestor_dir / grandcestor.name
                     if not destination.exists():
                         shutil.copytree(str(grandcestor), str(destination))
+
+        # preserve ancestral annotations
+        annotations_dir = artifact._archiver.annotations_dir
+        if annotations_dir and annotations_dir.exists():
+            for annotation in annotations_dir.iterdir():
+                destination = self.temp_annotations_dir / annotation.name
+                if not destination.exists():
+                    shutil.copytree(str(annotation), str(destination))
 
         return str(artifact.uuid)
 

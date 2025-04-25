@@ -13,12 +13,15 @@ class ArchiveFormat(v0.ArchiveFormat):
     PROVENANCE_DIR = 'provenance'
 
     @classmethod
-    def write(cls, archive_record, type, format, data_initializer,
-              provenance_capture):
-        super().write(archive_record, type, format, data_initializer,
-                      provenance_capture)
+    def write(cls, archive_record, type, format,
+              data_initializer, provenance_capture):
+        # contents of data dir written first
+        super().write(archive_record, type, format,
+                      data_initializer, provenance_capture)
+
         root = archive_record.root
 
+        # now we write the contents of provenance
         prov_dir = root / cls.PROVENANCE_DIR
         prov_dir.mkdir()
 

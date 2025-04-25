@@ -77,9 +77,10 @@ class Annotation():
             if annotation_type == 'Note':
                 annotation = Note.__new__(Note)
                 # Now attach Note attrs from metadata.yaml
+                annotation.id = meta_yaml['id']
                 annotation.name = meta_yaml['name']
-                annotation.created_at = meta_yaml['created_at']
                 annotation.annotation_type = meta_yaml['type']
+                annotation.created_at = meta_yaml['created_at']
 
                 # Validate that `note.txt` exists
                 note_fp = os.path.join(filepath, 'note.txt')

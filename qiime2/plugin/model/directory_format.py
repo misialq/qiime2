@@ -201,7 +201,19 @@ class DirectoryFormat(FormatBase, metaclass=_DirectoryMeta):
 
 
 class SingleFileDirectoryFormatBase(DirectoryFormat):
-    pass
+    def validate(self, level='max'):
+        super().validate(level=level)
+
+        collected_files = [
+            p for p in self.path.glob('**/*')
+            if not p.name.startswith('.') and p.is_file()
+        ]
+
+        if len(collected_files) != 1:
+            raise ValidationError(
+                f"{self.__class__.__name__} should contain exactly one file, "
+                f"but found {len(collected_files)} files."
+            )
 
 
 def SingleFileDirectoryFormat(name, pathspec, format):

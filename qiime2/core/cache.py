@@ -540,6 +540,16 @@ class Cache:
 
         return threadless_dict
 
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+
+        if not os.path.exists(self.path):
+            raise ValueError(
+                f"Cache path `{self.path}` not visible from the current"
+                " compute environment. It is likely you submitted this job to"
+                " a compute node without setting your cache to a globally"
+                " accessible location.")
+
     @classmethod
     def is_cache(cls, path):
         """Tells us if the path we were given is a cache.

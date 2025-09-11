@@ -5,6 +5,7 @@
 #
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
+import warnings
 
 from qiime2.core.type.util import is_collection_type
 from qiime2.core.type import HashableInvocation
@@ -16,9 +17,15 @@ def _validate_collection(collection_order):
     """Validate that all indexed items in the collection agree on how
     large the collection should be and that we have that many elements.
     """
-    assert all([elem.total == collection_order[0].total
-                for elem in collection_order])
-    assert len(collection_order) == collection_order[0].total
+    if not all([
+        elem.total == collection_order[0].total
+        for elem in collection_order]) \
+            or len(collection_order) != collection_order[0].total:
+        warnings.warn("Incomplete collection found when recycling, "
+                      "collection will be remade")
+        return False
+
+    return True
 
 
 class Context:
@@ -129,7 +136,8 @@ class Context:
 
                 # Get the order we should load collection items in
                 collection_order = list(cached_collection.keys())
-                _validate_collection(collection_order)
+                if not _validate_collection(collection_order):
+                    return None
                 collection_order.sort(key=lambda x: x.idx)
 
                 for elem_info in collection_order:
